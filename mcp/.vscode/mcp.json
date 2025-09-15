@@ -1,0 +1,18 @@
+{
+    "servers": {
+        "Stocks-Server": {
+            "type": "stdio",
+            "command": "node",
+            "args": [
+                "D:\\projects\\ai-studio\\mcp\\stocks-agent\\index.js"
+            ]
+        },
+        "Weather-Server": {
+            "type": "stdio",
+            "command": "node",
+            "args": [
+                "D:\\projects\\ai-studio\\mcp\\weather-agent\\index.js"
+            ]
+        }
+    }
+}

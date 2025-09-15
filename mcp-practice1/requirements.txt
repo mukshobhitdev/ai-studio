@@ -1,0 +1,5 @@
+mcp[cli]==<latest-version>
+azure-ai-formrecognizer
+azure-search-documents
+azure-ai-embeddings
+python-dotenv
