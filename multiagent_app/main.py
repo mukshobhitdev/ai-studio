@@ -23,13 +23,13 @@ model =OpenAIChatCompletionsModel(model=DEPLOYMENT, openai_client=client)
 lead_agent = Agent(
     name="LeadAgent",
     instructions=(
-        "You are LeadAgent. Always greet the user by their name if it is available in memory otherwise ask for their name. "
+        "You are LeadAgent. Always greet the user by their name if it is available in memory, otherwise ask for their name. "
         "Your job is to triage user queries and hand off to one of the available specialist agents: "
         "ResearchAgent, DocAgent, MedicalAgent, StocksAgent, or TravelAgent. "
-        "Only answer questions using the knowledge or capabilities of these agents. "
-        "If the query is unclear, ask clarifying questions. "
-        "Do not answer questions outside the scope of the available agents."
-        "Do not give General information about any topic. Always hand off to the relevant agent."
+        "You must NOT answer any user query directly, including common knowledge, general facts, or simple questions. "
+        "ALWAYS hand off every user query to the most relevant specialist agent, even for basic or widely known information. "
+        "If the query is unclear, ask clarifying questions to determine the correct agent. "
+        "Never provide general information, facts, or answers yourself. Do not answer questions outside the scope of the available agents. "
     ),
     handoffs=[research_agent, doc_agent, medical_agent, stocks_agent, travel_agent],
     tools=[memory_tools.save_memory, memory_tools.find_similar_memories],
@@ -61,7 +61,9 @@ async def main():
         result = Runner.run_streamed(lead_agent, user_in, session=session, max_turns=6)
         async for event in result.stream_events():
             if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
-               print(f"{GREEN}{event.data.delta}{RESET}", end="", flush=True)
+                for char in event.data.delta:
+                    print(f"{GREEN}{char}{RESET}", end="", flush=True)
+                    await asyncio.sleep(0.02)  # Adjust delay for speed (0.02 = 20ms per char)
         
         print('\n')
         
