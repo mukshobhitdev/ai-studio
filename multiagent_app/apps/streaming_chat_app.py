@@ -5,30 +5,32 @@ from agents import Agent, Runner, SQLiteSession, OpenAIChatCompletionsModel
 from openai import AsyncAzureOpenAI
 import sys
 import os
+import sqlite3
 
-# Initialize chat history in session state
+# Load CSS
+def load_css(file_name="chat_styles.css"):
+    file_path = os.path.join(os.path.dirname(__file__), file_name)
+    with open(file_path) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+load_css()
+
+# Initialize chat state
 if 'chat_history' not in st.session_state:
     st.session_state['chat_history'] = []
 if 'pending_input' not in st.session_state:
     st.session_state['pending_input'] = None
 
-# Add the parent directory to the path so we can import the agents module
+# Add parent directory for custom modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from ai_agents import doc_agent, medical_agent, research_agent, stocks_agent, travel_agent
 from tools import memory_tools
 
-agent_icon = "🤖"
-
-# Streamlit page config
-st.set_page_config(
-    page_title="Multi Agent System",
-    page_icon="🤖",
-    layout="wide",
-)
-
+# Page config
+st.set_page_config(page_title="Multi Agent System", page_icon="🤖", layout="wide")
 st.title("🤖 Multi Agent System")
 
+# Sidebar
 with st.sidebar:
     st.header("Configuration")
     agent_name = st.text_input("Agent Name", "Lead Agent")
@@ -40,63 +42,75 @@ with st.sidebar:
         "Never provide general information, facts, or answers yourself. Do not answer questions outside the scope of the available agents. "
     )
     agent_instructions = st.text_area("Agent Instructions", systemMessage, height=450)
-
     st.markdown("---")
 
-# Response area
-response_container = st.container()
+    # Clear All Button
+    if st.button("Clear All"):
+        # Clear Streamlit session state
+        st.session_state.clear()
 
-# Display chat history with alignment
-# Display chat history with alignment
-# Display chat history with alignment
+        # Clear SQLite DB
+        try:
+            conn = sqlite3.connect("conversations.db")
+            cursor = conn.cursor()
+          # Get all table names
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = cursor.fetchall()
+
+            # Drop each table
+            for table_name in tables:
+                cursor.execute(f"DROP TABLE IF EXISTS {table_name[0]};")
+            conn.commit()
+            conn.close()
+            st.success("All conversations cleared!")
+        except Exception as e:
+            st.error(f"Failed to clear database: {e}")
+
+        st.rerun()
+
+# Response container
+response_container = st.container()
+agent_icon = "🤖"
+
+# Display chat history
 with response_container:
     for entry in st.session_state['chat_history']:
         if entry['role'] == 'user':
             st.markdown(
                 f"""
-                <div style='display: flex; justify-content: flex-end;'>
-                    <div style='background-color:#2f2f2f;
-                                color:#ffffff;
-                                border-radius:12px;
-                                padding:8px 12px;
-                                margin:4px 0;
-                                display:inline-block;
-                                max-width:70%;'>
-                        <b>You:</b> {entry['content']}
-                    </div>
+                <div class="user-message-container">
+                    <div class="user-message"><b>You:</b> {entry['content']}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
         else:
-           st.markdown(
+            st.markdown(
                 f"""
-                <div style='display: flex; align-items: flex-start; margin:4px 0;'>
-                    <div style='margin-right:8px; font-size:20px;'>{agent_icon}</div>
+                <div class="agent-message-container">
+                    <div class="agent-icon">{agent_icon}</div>
                     <div>{entry['content']}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
-           )
+            )
 
-
-# Leave some margin before input panel
+# Margin above input panel
 st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
 
 # Input form
 with st.form(key="chat_form", clear_on_submit=True):
-    col1, col2 = st.columns([9, 1])  # adjust ratio as needed
+    col1, col2 = st.columns([9, 1])
     with col1:
         user_input = st.text_input("Message:", "", key="user_message", label_visibility="collapsed")
     with col2:
         submitted = st.form_submit_button("Send", type="primary")
 
-
+# SQLite session
 session = SQLiteSession("conversation_1", "conversations.db")
 
-
+# Streamed agent response
 async def stream_response(agent: Agent, user_input: str) -> str:
-    """Stream agent response and update UI live. Returns full response."""
     response_parts = ""
     try:
         result = Runner.run_streamed(agent, input=user_input, session=session, max_turns=6)
@@ -104,14 +118,22 @@ async def stream_response(agent: Agent, user_input: str) -> str:
             if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
                 response_parts += event.data.delta
                 message_placeholder.markdown(
-                    f"<div style='text-align: left; margin:4px 0;'>"
-                    f"<div style='margin-right:8px; font-size:20px;'>{agent_icon}</div> {response_parts}▌</div>",
+                    f"""
+                    <div class="agent-message-container">
+                        <div class="agent-icon">{agent_icon}</div>
+                        <div>{response_parts}▌</div>
+                    </div>
+                    """,
                     unsafe_allow_html=True,
                 )
-        # Final message (remove cursor)
+        # Final message
         message_placeholder.markdown(
-            f"<div style='text-align: left; margin:4px 0;'>"
-            f"<div style='margin-right:8px; font-size:20px;'>{agent_icon}</div> {response_parts}</div>",
+            f"""
+            <div class="agent-message-container">
+                <div class="agent-icon">{agent_icon}</div>
+                <div>{response_parts}</div>
+            </div>
+            """,
             unsafe_allow_html=True,
         )
         return response_parts
@@ -119,14 +141,13 @@ async def stream_response(agent: Agent, user_input: str) -> str:
         st.error(f"An error occurred: {e}")
         return ""
 
-
-# Step 1: Store user input immediately, then rerun to display it
+# Step 1: Show user message immediately
 if submitted and user_input.strip():
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
-    st.session_state['pending_input'] = user_input  # save for processing
+    st.session_state['pending_input'] = user_input
     st.rerun()
 
-# Step 2: After rerun, process pending input (agent response)
+# Step 2: Process agent response
 if st.session_state.get("pending_input"):
     DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
     client = AsyncAzureOpenAI()
