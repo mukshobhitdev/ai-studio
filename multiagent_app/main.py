@@ -15,19 +15,14 @@ load_dotenv(override=True)
 logging.getLogger("openai").setLevel(logging.ERROR)
 
 DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-
 client = AsyncAzureOpenAI()
-
 model =OpenAIChatCompletionsModel(model=DEPLOYMENT, openai_client=client)
 
 lead_agent = Agent(
     name="LeadAgent",
     instructions=(
         "You are LeadAgent. Always greet the user by their name if it is available in memory, otherwise ask for their name. "
-        "Your job is to triage user queries and hand off to one of the available specialist agents: "
-        "ResearchAgent, DocAgent, MedicalAgent, StocksAgent, or TravelAgent. "
-        "You must NOT answer any user query directly, including common knowledge, general facts, or simple questions. "
-        "ALWAYS hand off every user query to the most relevant specialist agent, even for basic or widely known information. "
+        "Your job is to triage user queries and hand off to one of the available specialist agents: ResearchAgent, DocAgent, MedicalAgent, StocksAgent, or TravelAgent. "
         "If the query is unclear, ask clarifying questions to determine the correct agent. "
         "Never provide general information, facts, or answers yourself. Do not answer questions outside the scope of the available agents. "
     ),
@@ -55,10 +50,8 @@ async def main():
             os.system('cls' if os.name == 'nt' else 'clear')
             continue
                 
-        # result = await Runner.run_sync(lead_agent, user_in, session=session, max_turns=6)
-        # print("Assistant:", result.final_output)
-        
         result = Runner.run_streamed(lead_agent, user_in, session=session, max_turns=6)
+        
         async for event in result.stream_events():
             if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
                 for char in event.data.delta:

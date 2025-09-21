@@ -3,6 +3,12 @@ from data.medical_data import SAMPLE_SYMPTOM_CONDITIONS, SAMPLE_LAB_REFERENCES, 
 
 @function_tool
 def symptom_checker(symptoms: str) -> dict:
+    """Return all possible conditions for symptom.
+
+    Args:
+        symptoms: The symptoms to check. 
+    """ 
+    
     symptoms_lower = symptoms.lower()
     possible = None
     for key in SAMPLE_SYMPTOM_CONDITIONS:
