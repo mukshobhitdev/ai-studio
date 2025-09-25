@@ -1,4 +1,3 @@
-# Data for Article Agent
 article_data = [
     {"article_id": "A001", "name": "Men's Slim Fit Jeans", "category": "Men", "type": "Jeans", "color": "Blue", "size": "32", "price": 39.99},
     {"article_id": "A002", "name": "Women's Summer Dress", "category": "Women", "type": "Dress", "color": "Red", "size": "M", "price": 29.99},

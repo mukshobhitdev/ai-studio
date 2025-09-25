@@ -6,6 +6,10 @@ from openai import AsyncAzureOpenAI
 import sys
 import os
 import sqlite3
+import logging
+
+
+logging.getLogger("openai").setLevel(logging.ERROR)
 
 # Load CSS
 def load_css(file_name="chat_styles.css"):

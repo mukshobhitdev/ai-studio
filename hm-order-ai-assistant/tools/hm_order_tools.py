@@ -27,6 +27,40 @@ def search_orders_by_product(product: str) -> list:
     return [o for o in hm_order_data if product.lower() in o["product"].lower()]
 
 @function_tool
+def get_orders_by_supplier(supplier_id: str) -> list:
+    """
+    Retrieve all orders from a specific supplier by supplier_id.
+    Args:
+        supplier_id (str): The unique identifier for the supplier.
+    Returns:
+        list: List of orders from the specified supplier.
+    """
+    return [order for order in hm_order_data if order["supplier_id"].lower() == supplier_id.lower()]
+
+@function_tool  
+def get_orders_by_article_id(article_id: str) -> list:
+    """
+    Retrieve all orders containing a specific article by article_id.
+    Args:
+        article_id (str): The unique identifier for the article.
+    Returns:
+        list: List of orders containing the specified article.
+    """
+    return [order for order in hm_order_data if article_id == order.get("article_id")]
+
+@function_tool  
+def get_orders_by_article_id(article_id: str) -> list:
+    """
+    Retrieve all orders containing a specific article by article_id.
+    Args:
+        article_id (str): The unique identifier for the article.
+    Returns:
+        list: List of orders containing the specified article.
+    """
+    return [order for order in hm_order_data if article_id == order.get("article_id")]
+
+
+@function_tool
 def filter_orders(status: str = None, supplier_id: str = None, order_date: str = None, delivery_date: str = None) -> list:
     """
     Filter orders by status, supplier_id, order_date, and/or delivery_date. All filters are optional and case-insensitive.

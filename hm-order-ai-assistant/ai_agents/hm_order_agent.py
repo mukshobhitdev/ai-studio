@@ -23,7 +23,9 @@ hm_order_agent = Agent(
         hm_order_tools.search_orders_by_product,
         hm_order_tools.filter_orders,
         hm_order_tools.list_all_orders,
-        hm_order_tools.get_order_status
+        hm_order_tools.get_order_status,
+        hm_order_tools.get_orders_by_supplier,
+        hm_order_tools.get_orders_by_article_id
     ],
     model=model
 )
