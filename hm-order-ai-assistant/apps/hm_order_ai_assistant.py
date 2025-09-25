@@ -34,20 +34,37 @@ from tools import memory_tools
 st.set_page_config(page_title="H&M Order AI Assistant", page_icon="🛒", layout="wide")
 st.title("🛒 H&M Order AI Assistant")
 
+
 # Sidebar
 with st.sidebar:
-    st.header("Configuration")
-    agent_name = st.text_input("Agent Name", "H&M Order AI Assistant")
-
-    systemMessage = (
-        "You are the H&M Order AI Assistant. Greet the user by their name if available in memory, otherwise ask for their name. "
-        "You help users track and manage H&M orders, suppliers, articles, and order follow-ups, and find relevant knowledge. "
-        "Triage user queries and hand off to the appropriate specialist agent: ArticleAgent, HMOrderAgent, KnowledgeAgent, OrderFollowupAgent, or SupplierAgent. "
-        "If the query is unclear, ask clarifying questions to determine the correct agent. "
-        "Never provide general information, facts, or answers yourself. Do not answer questions outside the scope of the available agents. "
-        "Always be helpful, concise, and focused on H&M order management."
+    # Add H&M logo at the top
+    st.image(
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/H%26M-Logo.svg/2560px-H%26M-Logo.svg.png",
+        width=100,
+        use_container_width=False,
     )
-    agent_instructions = st.text_area("Agent Instructions", systemMessage, height=450)
+    st.markdown("<div style='margin-bottom: 1.5em;'></div>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    # Dropdown for LLM Model selection
+    llm_models = [
+        "gpt-4.1",
+        "gpt-4.0",
+        "gpt-5",
+        "gemini-1.5",
+    ]
+    selected_llm_model = st.selectbox("Model", llm_models, key="llm_model")
+    st.markdown("---")
+
+    st.subheader("Available Agents")
+    agent_names = [
+        "Article Agent",
+        "HMOrder Agent",
+        "Knowledge Agent",
+        "OrderFollowup Agent",
+        "Supplier Agent",
+    ]
+    st.markdown("\n".join([f"- **{name}**" for name in agent_names]))
     st.markdown("---")
 
     # Clear All Button
@@ -69,10 +86,11 @@ with st.sidebar:
             conn.commit()
             conn.close()
             st.success("All conversations cleared!")
+            import time
+            time.sleep(1)
+            st.rerun()
         except Exception as e:
             st.error(f"Failed to clear database: {e}")
-
-        st.rerun()
 
 # Response container
 response_container = st.container()
@@ -159,9 +177,19 @@ if st.session_state.get("pending_input"):
     client = AsyncAzureOpenAI()
     model = OpenAIChatCompletionsModel(model=DEPLOYMENT, openai_client=client)
 
+    agent_name = "HMOrderLeadAgent"
+    systemMessage = (
+        "You are the H&M Order AI Assistant. Greet the user by their name if available in memory, otherwise ask for their name. "
+        "You help users track and manage H&M orders, suppliers, articles, and order follow-ups, and find relevant knowledge. "
+        "Triage user queries and hand off to the appropriate specialist agent: ArticleAgent, HMOrderAgent, KnowledgeAgent, OrderFollowupAgent, or SupplierAgent. "
+        "If the query is unclear, ask clarifying questions to determine the correct agent. "
+        "Never provide general information, facts, or answers yourself. Do not answer questions outside the scope of the available agents. "
+        "Always be helpful, concise, and focused on H&M order management."
+    )
+
     agent = Agent(
         name=agent_name,
-        instructions=agent_instructions,
+        instructions=systemMessage,
         handoffs=[article_agent, hm_order_agent, knowledge_agent, order_followup_agent, supplier_agent],
         tools=[
             memory_tools.save_memory,
