@@ -24,6 +24,21 @@ def book_flight(origin: str, dest: str, date: str) -> str:
     return f"Flight from {origin} to {dest} on {date} is booked. Reference number: FL123456"
 
 @function_tool
+def list_all_flights() -> list:
+    """List all flights in the sample data with airline, from, to, price, and duration fields.
+    """
+    return [
+        {
+            "airline": flight["airline"],
+            "from": flight["from"],
+            "to": flight["to"],
+            "price": flight["price"],
+            "duration": flight["duration"]
+        }
+        for flight in flights
+    ]
+
+@function_tool
 def search_hotels(dest: str, checkin: str, nights: int = 2) -> dict:
     """search hotels for given destination, check-in date, and number of nights. Return the hotels bases on match.
 
@@ -45,3 +60,9 @@ def book_hotel(dest: str, checkin: str, nights: int = 2) -> str:
         nights: The number of nights to stay.
     """
     return f"Hotel in {dest} booked from {checkin} for {nights} nights. Reference number: HT789012"
+
+@function_tool
+def list_all_hotels() -> list:
+    """List all hotels in the sample data.
+    """
+    return [{"name": hotel, "info": location} for hotel, location in hotels.items() ]

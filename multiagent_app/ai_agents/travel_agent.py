@@ -10,7 +10,6 @@ DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
 client = AsyncAzureOpenAI()
 model =OpenAIChatCompletionsModel(model=DEPLOYMENT, openai_client=client)
 
-
 travel_agent = Agent(
     name="TravelAgent",
     instructions=(
@@ -18,6 +17,7 @@ travel_agent = Agent(
         "Ask clarifying questions about travel dates, destinations, preferences, and constraints to provide the best options. "
         "If the request is unclear or outside your scope, ask for more details or suggest consulting a travel professional."
     ),
-    tools=[travel_tools.search_flights, travel_tools.search_hotels, travel_tools.book_flight],
+    tools=[travel_tools.search_flights, travel_tools.book_flight, travel_tools.list_all_flights,
+           travel_tools.book_hotel, travel_tools.search_hotels, travel_tools.list_all_hotels],
     model=model
 )

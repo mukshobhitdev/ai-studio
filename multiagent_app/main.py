@@ -22,7 +22,6 @@ lead_agent = Agent(
     name="LeadAgent",
     instructions=(
         "You are LeadAgent. Always greet the user by their name if it is available in memory, otherwise ask for their name. "
-        "Your job is to triage user queries and hand off to one of the available specialist agents: ResearchAgent, DocAgent, MedicalAgent, StocksAgent, or TravelAgent. "
         "If the query is unclear, ask clarifying questions to determine the correct agent. "
         "Never provide general information, facts, or answers yourself. Do not answer questions outside the scope of the available agents. "
     ),
