@@ -1,0 +1,31 @@
+/* chat_styles.css */
+
+/* User message bubble */
+.user-message {
+    background-color: #2f2f2f; /* Dark bubble for dark theme */
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin: 4px 0;
+    display: inline-block;
+    max-width: 70%;
+}
+
+/* Right-aligned user message container */
+.user-message-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Agent message container */
+.agent-message-container {
+    display: flex;
+    align-items: flex-start;
+    margin: 4px 0;
+}
+
+/* Agent icon */
+.agent-icon {
+    margin-right: 8px;
+    font-size: 20px;
+}

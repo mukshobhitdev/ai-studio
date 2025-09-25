@@ -1,0 +1,7 @@
+openai-agents
+openai
+python-dotenv
+sqlalchemy
+aiosqlite
+nest_asyncio
+streamlit

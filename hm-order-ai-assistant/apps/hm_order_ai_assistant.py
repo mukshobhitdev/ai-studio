@@ -23,23 +23,25 @@ if 'pending_input' not in st.session_state:
 
 # Add parent directory for custom modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ai_agents import doc_agent, medical_agent, research_agent, stocks_agent, travel_agent
+from ai_agents import article_agent, hm_order_agent, knowledge_agent, order_followup_agent, supplier_agent
 from tools import memory_tools
 
 # Page config
-st.set_page_config(page_title="Multi Agent System", page_icon="🤖", layout="wide")
-st.title("🤖 Multi Agent System")
+st.set_page_config(page_title="H&M Order AI Assistant", page_icon="🛒", layout="wide")
+st.title("🛒 H&M Order AI Assistant")
 
 # Sidebar
 with st.sidebar:
     st.header("Configuration")
-    agent_name = st.text_input("Agent Name", "Lead Agent")
+    agent_name = st.text_input("Agent Name", "H&M Order AI Assistant")
 
     systemMessage = (
-        "You are LeadAgent. Always greet the user by their name if it is available in memory, otherwise ask for their name. "
-        "Your job is to triage user queries and hand off to one of the available specialist agents: ResearchAgent, DocAgent, MedicalAgent, StocksAgent, or TravelAgent. "
+        "You are the H&M Order AI Assistant. Greet the user by their name if available in memory, otherwise ask for their name. "
+        "You help users track and manage H&M orders, suppliers, articles, and order follow-ups, and find relevant knowledge. "
+        "Triage user queries and hand off to the appropriate specialist agent: ArticleAgent, HMOrderAgent, KnowledgeAgent, OrderFollowupAgent, or SupplierAgent. "
         "If the query is unclear, ask clarifying questions to determine the correct agent. "
         "Never provide general information, facts, or answers yourself. Do not answer questions outside the scope of the available agents. "
+        "Always be helpful, concise, and focused on H&M order management."
     )
     agent_instructions = st.text_area("Agent Instructions", systemMessage, height=450)
     st.markdown("---")
@@ -92,7 +94,7 @@ with response_container:
                     <div>{entry['content']}</div>
                 </div>
                 """,
-                unsafe_allow_html=True,
+                unsafe_allow_html=True
             )
 
 # Margin above input panel
@@ -156,7 +158,7 @@ if st.session_state.get("pending_input"):
     agent = Agent(
         name=agent_name,
         instructions=agent_instructions,
-        handoffs=[research_agent, doc_agent, medical_agent, stocks_agent, travel_agent],
+        handoffs=[article_agent, hm_order_agent, knowledge_agent, order_followup_agent, supplier_agent],
         tools=[
             memory_tools.save_memory,
             memory_tools.find_similar_memories,
